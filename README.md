@@ -49,7 +49,7 @@ Default config file: `config.json`.
 
 ## How to Install
 - Install `node.js`, `git` on your device
-- Dwnload or `git clone <link>` the repository! 
+- Download or `git clone <link>` the repository! 
 - Run `yarn install` inside the folder
 
 If you need assistance reach out to us on [Discord.](https://discord.gg/hF2Sc8jkxZ). We also have the compiled and easy installation of the project in case you need it.
