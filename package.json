@@ -1,0 +1,17 @@
+{
+  "name": "Bidding-Bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.0.0",
+    "axios": "^0.24.0",
+    "opensea-js": "^1.2.7"
+  }
+}
