@@ -1,12 +1,25 @@
 {
   "opensea_collection_hash": "",
-  "infura_keys": [""],
-  "mnemonics": [""],
-  "wallet_addresses": [""],
-  "opensea_keys": [""],
-  "offset": { "start": 1, "end": 100 },
+  "infura_keys": [
+    ""
+  ],
+  "mnemonics": [
+    ""
+  ],
+  "wallet_addresses": [
+    ""
+  ],
+  "opensea_keys": [
+    ""
+  ],
+  "offset": {
+    "start": 1,
+    "end": 100
+  },
   "exp_time": 1,
-  "floor_price_percent": 0.0001,
+  "floor_price_percent": 0.1,
   "fetch_floor_price_at_bid_no": 200,
+  "is_fixed_price": true,
+  "fixed_bid_price": 0.02,
   "gas_price": 0
 }

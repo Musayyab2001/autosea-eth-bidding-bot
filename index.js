@@ -15,7 +15,11 @@ const {
   exp_time,
   offset,
   gas_price,
+  is_fixed_price,
+  fixed_bid_price,
 } = config;
+
+let assetPrice = 0;
 
 const delay = async (ms) => {
   return new Promise((resolve) => {
@@ -76,7 +80,7 @@ const getAssetFloorPrice = async (assetSlug) => {
   return response.data.collection.stats.floor_price * floor_price_percent;
 };
 
-const makeOffer = async (seaport, idx, tokenAddress, tokenId, assetPrice) => {
+const makeOffer = async (seaport, idx, tokenAddress, tokenId) => {
   if (!seaport) {
     console.log("No seaport instance found");
     return;
@@ -91,33 +95,34 @@ const makeOffer = async (seaport, idx, tokenAddress, tokenId, assetPrice) => {
       const assetSlug = asset.collection.slug;
       floorPrice = await getAssetFloorPrice(assetSlug);
     }
-    if (floorPrice > 0) {
-      assetPrice = floorPrice;
+    if (is_fixed_price) {
+      assetPrice = fixed_bid_price;
+    } else if (floorPrice > 0) {
+      assetPrice = floorPrice.toFixed(4);
     }
-    assetPrice.toFixed(4);
+
     console.log(
       `\n   ${idx} Processing...` +
-        `\n     Address: ${tokenAddress}` +
-        `\n     Id:      ${tokenId}` +
-        `\n     Price:   ${assetPrice}`
+      `\n     Address: ${tokenAddress}` +
+      `\n     Id:      ${tokenId}` +
+      `\n     Price:   ${assetPrice}`
     );
     const createBuyOrderPayload = getCreateBuyOrderPayload(
       idx,
       tokenId,
-      tokenAddress,
-      assetPrice
+      tokenAddress
     );
     await seaport.createBuyOrder(createBuyOrderPayload);
     console.log(
       `\n * ${idx} Offer succeed.` +
-        `\n     Address: ${tokenAddress}` +
-        `\n     Id:      ${tokenId}` +
-        `\n     Price:   ${assetPrice}`
+      `\n     Address: ${tokenAddress}` +
+      `\n     Id:      ${tokenId}` +
+      `\n     Price:   ${assetPrice}`
     );
   } catch (error) {
     if (error.message && error.message.includes("API Error 429")) {
       console.log(`   ${idx} Request was throttled. Trying again...`);
-      makeOffer(seaport, idx, opensea_collection_hash, tokenId, assetPrice);
+      makeOffer(seaport, idx, opensea_collection_hash, tokenId);
     } else if (error.message && error.message.includes('{"success":false}')) {
       console.log(` ! ${idx} Request failed. 404 API error.`);
     } else {
@@ -127,7 +132,7 @@ const makeOffer = async (seaport, idx, tokenAddress, tokenId, assetPrice) => {
   }
 };
 
-const getCreateBuyOrderPayload = (idx, tokenId, tokenAddress, startAmount) => {
+const getCreateBuyOrderPayload = (idx, tokenId, tokenAddress) => {
   idx = idx % wallet_addresses.length;
   console.log("Changing wallet address");
   return {
@@ -137,11 +142,10 @@ const getCreateBuyOrderPayload = (idx, tokenId, tokenAddress, startAmount) => {
     },
     accountAddress: wallet_addresses[idx],
     expirationTime: Math.round(Date.now() / 1000 + 60 * 60 * exp_time),
-    startAmount: startAmount,
+    startAmount: assetPrice,
   };
 };
 
-let assetPrice = 0;
 const main = async () => {
   try {
     for (let idx = 1; idx <= offset.end - offset.start + 1; idx++) {
@@ -149,11 +153,11 @@ const main = async () => {
       const tokenId = offset.start + idx - 1;
       console.log(
         `\n   ${idx} Scheduling...` +
-          `\n     Address: ${opensea_collection_hash}` +
-          `\n     Id:      ${tokenId}` +
-          `\n     Price:   ${assetPrice}`
+        `\n     Address: ${opensea_collection_hash}` +
+        `\n     Id:      ${tokenId}` +
+        `\n     Price:   ${assetPrice}`
       );
-      makeOffer(seaport, idx, opensea_collection_hash, tokenId, assetPrice);
+      makeOffer(seaport, idx, opensea_collection_hash, tokenId);
       await delay(Math.ceil(5000 / opensea_keys.length));
     }
     console.log("Bidding Completed!");
